@@ -34,19 +34,29 @@ async function createViewer(host) {
   // viewer.addFormEditorPanel();
   viewer.layoutMode = 2;
 
-  const searcher = viewer.searcher;
-  const findOptions = { Text: "9", MatchCase: false, HighlightAll: true };
+  const findOptions = { Text: "9", MatchCase: false, HighlightAll: false };
   const searchIterator = await viewer.searcher.search(findOptions);
-  
-  const searchResult = await searchIterator.next();
-  // searcher.cancel();
-  console.log(searchResult)
-  console.log(await searchIterator.next())
-  console.log(await searchIterator.next())
-  console.log(await searchIterator.next())
+  let resultsCount = 0;
+  let searchResult;
+  console.log("Search Starting", new Date().toLocaleTimeString())
+  do {
+    searchResult = await searchIterator.next();
+    if (searchResult.value) {
+      // this could be either result or progress message (ItemIndex < 0)
+      if (searchResult.value.ItemIndex >= 0) {
+        console.log('next search result:');
+        console.log(searchResult.value);
+        resultsCount++;
+      }
+    }
+    else {
+      console.log("Search completed", new Date().toLocaleTimeString());
+      break;
+    }
+  }
+  while (!searchResult.done);
+  console.log('Total results count is ' + resultsCount);
 
-
-  searcher.highlight(searchResult.value);
-
+  // searcher.highlight(searchResult.value);
   return viewer;
 }
